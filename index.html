@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game</title>
+</head>
+<!-- <body onload="startGame()"> -->
+<body style="display: flex; justify-content: center; align-items: center;">
+    <button onclick="startGame()" id="startBtn">Start</button>
+    <script>
+        var dNot = [];
+        var fNot = [];
+        var jNot = [];
+        var kNot = [];
+
+        var dBorder, fBorder, jBorder, kBorder;
+        var dBtn, fBtn, jBtn, kBtn;
+        var dLane, fLane, jLane, kLane;
+
+        var thVoid;
+        var theSong;
+
+        var dTapSound = [];
+        var fTapSound = [];
+        var jTapSound = [];
+        var kTapSound = [];
+
+        // var dTapSound;
+        // var fTapSound;
+        // var jTapSound;
+        // var kTapSound;
+
+        function startGame(){
+            document.getElementById("startBtn").style.display = "none";
+            myGameArea.start();
+
+            dBorder = new component(80, 10, "grey", 320, 420);
+            fBorder = new component(80, 10, "grey", 400, 420);
+            jBorder = new component(80, 10, "grey", 480, 420);
+            kBorder = new component(80, 10, "grey", 560, 420);
+
+            bad = new component(320, 10, "red", 320, 470);
+            theVoid = new component(320, 10, "grey", 320, 470);
+
+            dLane = new component(80, myGameArea.canvas.height, "rgba(0, 0, 0, 0.5)", 320, 0);
+            fLane = new component(80, myGameArea.canvas.height, "rgba(0, 0, 0, 0.5)", 400, 0);
+            jLane = new component(80, myGameArea.canvas.height, "rgba(0, 0, 0, 0.5)", 480, 0);
+            kLane = new component(80, myGameArea.canvas.height, "rgba(0, 0, 0, 0.5)", 560, 0);
+
+            dBtn = new component(80, 150, "#3e8db1", 320, 450);
+            fBtn = new component(80, 150, "#3e8db1", 400, 450);
+            jBtn = new component(80, 150, "#3e8db1", 480, 450);
+            kBtn = new component(80, 150, "#3e8db1", 560, 450);
+
+            // dTapSound = new sound("assets/bgm/perfect.mp3");
+            // fTapSound = new sound("assets/bgm/perfect.mp3");
+            // jTapSound = new sound("assets/bgm/perfect.mp3");
+            // kTapSound = new sound("assets/bgm/perfect.mp3");
+
+            theSong = new sound("assets/song/kaikai_kitan.mp3");
+        }
+
+        var myGameArea = {
+            canvas : document.createElement("canvas"),
+            start : function(){
+                this.canvas.width = 960;
+                this.canvas.height = 600;
+                // this.canvas.style.backgroundColor = "#003366";
+                this.canvas.style.backgroundImage = "url('assets/img/bg_fever.png')";
+                this.canvas.style.backgroundSize = "cover";
+                this.canvas.style.backgroundPositionX = "center";
+                this.context = this.canvas.getContext("2d");
+                document.body.insertBefore(this.canvas, document.body.childNodes[1]);
+                // this.frameNo = -520; // uji coba
+                this.frameNo = -530; // ingame
+                this.interval = setInterval(updateGameArea, 10);
+                // this.interval = setInterval(updateGameArea, 1);
+
+                // keyboard as controller
+                window.addEventListener('keydown', function(e){
+                    myGameArea.keys = (myGameArea.keys || []);
+                    myGameArea.keys[e.keyCode] = true;
+                });
+                window.addEventListener('keyup', function(e){
+                    myGameArea.keys[e.keyCode] = false;
+                });
+
+                // component as controller
+                window.addEventListener('mousedown', function(e){
+                    myGameArea.x = e.pageX;
+                    myGameArea.y = e.pageY;
+                });
+                window.addEventListener('mouseup', function(e){
+                    myGameArea.x = false;
+                    myGameArea.y = false;
+                });
+                window.addEventListener('click', function(e){
+                    myGameArea.x = e.pageX;
+                    myGameArea.y = e.pageY;
+                });
+                // window.addEventListener('touchend', function(e){
+                //     myGameArea.x = false;
+                //     myGameArea.y = false;
+                // });
+            },
+            clear : function(){
+                this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            },
+            stop : function(){
+                clearInterval(this.interval);
+            }
+        }
+
+        function component(width, height, color, x, y, type){
+            this.type = type;
+            if(this.type == "image"){
+                this.image = new Image();
+                this.image.src = color;
+            }
+            this.width = width;
+            this.height = height;
+            this.color = color;
+            this.speedX = 0;
+            this.speedY = 0;
+            this.x = x;
+            this.y = y;
+            this.update = function(){
+                ctx = myGameArea.context;
+                if(type == "image"){
+                    ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
+                }else{
+                    ctx.fillStyle = this.color;
+                    ctx.fillRect(this.x, this.y, this.width, this.height);
+                    ctx.lineWidth = 5;
+                    ctx.strokeRect(this.x, this.y, this.width, this.height);
+                }
+            }
+            this.newPos = function(){
+                this.x += this.speedX;
+                this.y += this.speedY;
+            }
+
+            // component as controller
+            this.clicked = function(){
+                var myleft = this.x;
+                var myright = this.x + (this.width);
+                var mytop = this.y;
+                var mybottom = this.y + (this.height);
+                var clicked = true;
+                if((mybottom < myGameArea.y) || (mytop > myGameArea.y) || (myright < myGameArea.x) || (myleft > myGameArea.x)){
+                    clicked = false;
+                }
+                // var clicked = false;
+                // if((mybottom > myGameArea.y) || (mytop < myGameArea.y) || (myright > myGameArea.x) || (myleft < myGameArea.x)){
+                //     clicked = true;
+                // }
+                return clicked;
+            }
+
+            // game workflow
+            this.crashWith = function(otherObj){
+                var myleft = this.x;
+                var myright = this.x + (this.width);
+                var mytop = this.y;
+                var mybottom = this.y + (this.height);
+                var otherleft = otherObj.x;
+                var otherright = otherObj.x + (otherObj.width);
+                var othertop = otherObj.y;
+                var otherbottom = otherObj.y + (otherObj.height);
+                var crash = true;
+                if((mybottom < othertop) || (mytop > otherbottom) || (myright < otherleft) || (myleft > otherright)){
+                    crash = false;
+                }
+                return crash;
+            }
+        }
+
+        function updateGameArea(){
+            var x, y;
+            for(i = 0; i < dNot.length; i++){
+                if(dNot[i].crashWith(theVoid)){
+                    myGameArea.stop();
+                    theSong.stop();
+                    return;
+                }
+                // if(dNot[i].crashWith(dBorder) && ((myGameArea.keys && myGameArea.keys[68]) || !(dBtn.clicked()))){
+                // if(dNot[i].crashWith(dBorder) && ((myGameArea.keys && myGameArea.keys[68]) || (dBtn.color == "#66CFFF"))){
+                if(dNot[i].crashWith(dBorder) && (dBtn.color == "#66CFFF")){
+                    dNot[i].y = myGameArea.canvas.height;
+                    dTapSound[i].play();
+                }
+            }
+            for(i = 0; i < fNot.length; i++){
+                if(fNot[i].crashWith(theVoid)){
+                    myGameArea.stop();
+                    theSong.stop();
+                    return;
+                }
+                // if(fNot[i].crashWith(fBorder) && ((myGameArea.keys && myGameArea.keys[70]) || !(fBtn.clicked()))){
+                if(fNot[i].crashWith(fBorder) && (fBtn.color == "#66CFFF")){
+                    fNot[i].y = myGameArea.canvas.height;
+                    fTapSound[i].play();
+                }
+            }
+            for(i = 0; i < jNot.length; i++){
+                if(jNot[i].crashWith(theVoid)){
+                    myGameArea.stop();
+                    theSong.stop();
+                    return;
+                }
+                // if(jNot[i].crashWith(jBorder) && ((myGameArea.keys && myGameArea.keys[74]) || !(jBtn.clicked()))){
+                if(jNot[i].crashWith(jBorder) && (jBtn.color == "#66CFFF")){
+                    jNot[i].y = myGameArea.canvas.height;
+                    jTapSound[i].play();
+                }
+            }
+            for(i = 0; i < kNot.length; i++){
+                if(kNot[i].crashWith(theVoid)){
+                    myGameArea.stop();
+                    theSong.stop();
+                    return;
+                }
+                // if(kNot[i].crashWith(kBorder) && ((myGameArea.keys && myGameArea.keys[75]) || !(kBtn.clicked()))){
+                if(kNot[i].crashWith(kBorder) && (kBtn.color == "#66CFFF")){
+                    kNot[i].y = myGameArea.canvas.height;
+                    kTapSound[i].play();
+                }
+            }
+
+            myGameArea.clear();
+            myGameArea.frameNo++;
+            
+            dLane.update();
+            fLane.update();
+            jLane.update();
+            kLane.update();
+
+            if (everyintervalD()) {
+                dNot.push(new component(40, 40, "assets/img/note_normal.png", 340, -40, "image"));
+                dTapSound.push(new sound("assets/bgm/perfect.mp3"));
+            }
+            if (everyintervalF()) {
+                fNot.push(new component(40, 40, "assets/img/note_normal.png", 420, -40, "image"));
+                fTapSound.push(new sound("assets/bgm/perfect.mp3"));
+            }
+            if (everyintervalJ()) {
+                jNot.push(new component(40, 40, "assets/img/note_normal.png", 500, -40, "image"));
+                jTapSound.push(new sound("assets/bgm/perfect.mp3"));
+            }
+            if (everyintervalK()) {
+                kNot.push(new component(40, 40, "assets/img/note_normal.png", 580, -40, "image"));
+                kTapSound.push(new sound("assets/bgm/perfect.mp3"));
+            }
+
+            dBtn.color = "#3e8db1";
+            fBtn.color = "#3e8db1";
+            jBtn.color = "#3e8db1";
+            kBtn.color = "#3e8db1";
+
+            // keyboard as controller
+            if (myGameArea.keys && myGameArea.keys[68]) {
+                dBtn.color = "#66CFFF";
+            }
+            if (myGameArea.keys && myGameArea.keys[70]) {
+                fBtn.color = "#66CFFF";
+            }
+            if (myGameArea.keys && myGameArea.keys[74]) {
+                jBtn.color = "#66CFFF";
+            }
+            if (myGameArea.keys && myGameArea.keys[75]) {
+                kBtn.color = "#66CFFF";
+            }
+
+            // component as controller
+            if(myGameArea.x && myGameArea.y){
+                if(dBtn.clicked()){
+                    dBtn.color = "#66CFFF";
+                }
+                if(fBtn.clicked()){
+                    fBtn.color = "#66CFFF";
+                }
+                if(jBtn.clicked()){
+                    jBtn.color = "#66CFFF";
+                }
+                if(kBtn.clicked()){
+                    kBtn.color = "#66CFFF";
+                }
+            }
+            
+            dBorder.update();
+            fBorder.update();
+            jBorder.update();
+            kBorder.update();
+            
+            theVoid.update();
+            
+            for(i = 0; i < dNot.length; i++){
+                dNot[i].y++;
+                dNot[i].update();
+            }
+            
+            for(i = 0; i < fNot.length; i++){
+                fNot[i].y++;
+                fNot[i].update();
+            }
+            
+            for(i = 0; i < jNot.length; i++){
+                jNot[i].y++;
+                jNot[i].update();
+            }
+            
+            for(i = 0; i < kNot.length; i++){
+                kNot[i].y++;
+                kNot[i].update();
+            }
+            
+            dBtn.update();
+            fBtn.update();
+            jBtn.update();
+            kBtn.update();
+
+            // dTapSound.update();
+            // fTapSound.update();
+            // jTapSound.update();
+            // kTapSound.update();
+
+            theSong.play();
+        }
+
+        // 89 | Normal
+        const beatD = [519, 844, 990, 1087, 1136, 1266, 1363, 1509, 1687, 1881, 2076, 2287, 2563, 2806, 2968, 3017, 3114, 3277, 3438, 3601, 3795, ];
+        const beatF = [569, 666, 738, 925, 1136, 1168, 1443, 1606, 1654, 1784, 1947, 2189, 2384, 2498, 2708, 2887, 3050, 3179, 3357, 3536, 3633, 3699, ];
+        const beatJ = [519, 617, 763, 957, 1298, 1476, , 1557, 1606, 1654, 1817, 2108, 2141, 2336,2530,  2758, 2919, 3050, 3146, 3308, 3568, 3666, ];
+        const beatK = [666, 715, 876, 1039, 1087, 1217, 1266, 1396, 1736, 1784, 1881, 1995, 2238, 2449, 2498, 2628, 2659, 2854, 2968, 3017, 3227, 3406, 3487, 3536, 3746, ];
+
+        // 0 | Easy
+        // const beatD = [];
+        // const beatF = [];
+        // const beatJ = [];
+        // const beatK = [];
+
+        function everyintervalD(){
+            for(i = 0; i < beatD.length; i++){
+                if(myGameArea.frameNo == beatD[i]-988){
+                    return true
+                }
+            }return false
+        }
+
+        function everyintervalF(){
+            for(i = 0; i < beatF.length; i++){
+                if(myGameArea.frameNo == beatF[i]-988){
+                    return true
+                }
+            }return false
+        }
+
+        function everyintervalJ(){
+            for(i = 0; i < beatJ.length; i++){
+                if(myGameArea.frameNo == beatJ[i]-988){
+                    return true
+                }
+            }return false
+        }
+
+        function everyintervalK(){
+            for(i = 0; i < beatK.length; i++){
+                if(myGameArea.frameNo == beatK[i]-988){
+                    return true
+                }
+            }return false
+        }
+
+        function sound(src){
+            this.sound = document.createElement("audio");
+            this.sound.src = src;
+            this.sound.setAttribute("preload", "auto");
+            this.sound.setAttribute("controls", "none");
+            this.sound.style.display = "none";
+            document.body.appendChild(this.sound);
+            this.play = function(){
+                this.sound.play();
+            }
+            this.stop = function(){
+                this.sound.pause();
+            }
+        }
+    </script>
+    <p id="demo"></p>
+</body>
+</html>
