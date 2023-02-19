@@ -7,8 +7,14 @@
     <title>Game</title>
 </head>
 <!-- <body onload="startGame()"> -->
-<body style="display: flex; justify-content: center; align-items: center;">
-    <button onclick="startGame()" id="startBtn">Start</button>
+<body style="display: flex; justify-content: center; align-items: center; width: 960px;">
+    <div class="start">
+        <form onsubmit="startGame()" action="javascript:void">
+            <input type="text" name="name" id="name" placeholder="Masukkan nama player" required>
+            <button type="submit" id="startBtn">Start</button>
+        </form>
+    </div>
+
     <script>
         var dNot = [];
         var fNot = [];
@@ -27,12 +33,16 @@
         var jTapSound = [];
         var kTapSound = [];
 
+        var failCounter
+        var myScore
+
         // var dTapSound;
         // var fTapSound;
         // var jTapSound;
         // var kTapSound;
 
         function startGame(){
+            document.getElementById("name").style.display = "none";
             document.getElementById("startBtn").style.display = "none";
             myGameArea.start();
 
@@ -53,6 +63,10 @@
             fBtn = new component(80, 150, "#3e8db1", 400, 450);
             jBtn = new component(80, 150, "#3e8db1", 480, 450);
             kBtn = new component(80, 150, "#3e8db1", 560, 450);
+
+            playerName = new component('30px', 'Consolas', 'white', 10, 40, 'text')
+            failCounter = new component('30px', 'Consolas', 'white', 10, 80, 'text')
+            myScore = new component('30px', 'Consolas', 'white', 10, 120, 'text')
 
             // dTapSound = new sound("assets/bgm/perfect.mp3");
             // fTapSound = new sound("assets/bgm/perfect.mp3");
@@ -130,6 +144,10 @@
                 ctx = myGameArea.context;
                 if(type == "image"){
                     ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
+                }else if(type == 'text') {
+                    ctx.font = this.width + ' ' + this.height
+                    ctx.fillStyle = color
+                    ctx.fillText(this.text, this.x, this.y)
                 }else{
                     ctx.fillStyle = this.color;
                     ctx.fillRect(this.x, this.y, this.width, this.height);
@@ -177,56 +195,65 @@
             }
         }
 
+        var fail = 0
+        var score = 0
+
         function updateGameArea(){
-            var x, y;
+            var x, y
             for(i = 0; i < dNot.length; i++){
                 if(dNot[i].crashWith(theVoid)){
-                    myGameArea.stop();
-                    theSong.stop();
-                    return;
+                    fail++
+                    dNot[i].y = myGameArea.canvas.height;
                 }
                 // if(dNot[i].crashWith(dBorder) && ((myGameArea.keys && myGameArea.keys[68]) || !(dBtn.clicked()))){
                 // if(dNot[i].crashWith(dBorder) && ((myGameArea.keys && myGameArea.keys[68]) || (dBtn.color == "#66CFFF"))){
                 if(dNot[i].crashWith(dBorder) && (dBtn.color == "#66CFFF")){
                     dNot[i].y = myGameArea.canvas.height;
                     dTapSound[i].play();
+                    score++
                 }
             }
             for(i = 0; i < fNot.length; i++){
                 if(fNot[i].crashWith(theVoid)){
-                    myGameArea.stop();
-                    theSong.stop();
-                    return;
+                    fail++
+                    fNot[i].y = myGameArea.canvas.height;
                 }
                 // if(fNot[i].crashWith(fBorder) && ((myGameArea.keys && myGameArea.keys[70]) || !(fBtn.clicked()))){
                 if(fNot[i].crashWith(fBorder) && (fBtn.color == "#66CFFF")){
                     fNot[i].y = myGameArea.canvas.height;
                     fTapSound[i].play();
+                    score++
                 }
             }
             for(i = 0; i < jNot.length; i++){
                 if(jNot[i].crashWith(theVoid)){
-                    myGameArea.stop();
-                    theSong.stop();
-                    return;
+                    fail++
+                    jNot[i].y = myGameArea.canvas.height;
                 }
                 // if(jNot[i].crashWith(jBorder) && ((myGameArea.keys && myGameArea.keys[74]) || !(jBtn.clicked()))){
                 if(jNot[i].crashWith(jBorder) && (jBtn.color == "#66CFFF")){
                     jNot[i].y = myGameArea.canvas.height;
                     jTapSound[i].play();
+                    score++
                 }
             }
             for(i = 0; i < kNot.length; i++){
                 if(kNot[i].crashWith(theVoid)){
-                    myGameArea.stop();
-                    theSong.stop();
-                    return;
+                    fail++
+                    kNot[i].y = myGameArea.canvas.height;
                 }
                 // if(kNot[i].crashWith(kBorder) && ((myGameArea.keys && myGameArea.keys[75]) || !(kBtn.clicked()))){
                 if(kNot[i].crashWith(kBorder) && (kBtn.color == "#66CFFF")){
                     kNot[i].y = myGameArea.canvas.height;
                     kTapSound[i].play();
+                    score++
                 }
+            }
+
+            if(fail >= 5) {
+                myGameArea.stop()
+                // theSong.stop()
+                theSong.sound.pause()
             }
 
             myGameArea.clear();
@@ -320,6 +347,15 @@
             fBtn.update();
             jBtn.update();
             kBtn.update();
+
+            playerName.text = 'NAME: ' + document.getElementById("name").value
+            playerName.update()
+
+            failCounter.text = 'FAIL: ' + fail
+            failCounter.update()
+
+            myScore.text = 'SCORE: ' + score
+            myScore.update()
 
             // dTapSound.update();
             // fTapSound.update();
