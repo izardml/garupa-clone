@@ -14,11 +14,15 @@
             background-image: url('assets/img/bg_fever.png');
             background-size: cover;
             background-position-x: center;
+            height: 98vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         canvas {
-            transform: scale(1.5, 1.5);
-            transform-origin: top left;
+            transform: scale(2);
+            /* transform-origin: top left; */
         }
 
         form, #game-over {
@@ -31,6 +35,7 @@
             left: 50%;
             transform: translateY(-50%);
             transform: translateX(-50%);
+            z-index: 10;
         }
 
         #game-over {
@@ -128,7 +133,8 @@
                 this.context = this.canvas.getContext("2d");
                 document.body.insertBefore(this.canvas, document.body.childNodes[1]);
                 // this.frameNo = -520; // uji coba
-                this.frameNo = -530; // ingame
+                // this.frameNo = -630; // ingame
+                this.frameNo = 0
                 this.interval = setInterval(updateGameArea, 10);
                 // this.interval = setInterval(updateGameArea, 1);
 
@@ -295,11 +301,16 @@
 
             if(fail >= 5) {
                 myGameArea.stop()
-                // theSong.stop()
                 theSong.sound.pause()
+            }else{
+                theSong.play();
             }
 
             myGameArea.clear()
+            // myGameArea.frameNo++
+            // if(myGameArea.frameNo > 3795 - 988) {
+            //     myGameArea.frameNo = -530
+            // }
             myGameArea.frameNo == 2750 ? myGameArea.frameNo = -530 : myGameArea.frameNo++
             
             dLane.update();
@@ -307,21 +318,39 @@
             jLane.update();
             kLane.update();
 
-            if (everyintervalD()) {
-                dNot.push(new component(40, 40, "assets/img/note_normal.png", 340, -40, "image"));
-                dTapSound.push(new sound("assets/bgm/perfect.mp3"));
-            }
-            if (everyintervalF()) {
-                fNot.push(new component(40, 40, "assets/img/note_normal.png", 420, -40, "image"));
-                fTapSound.push(new sound("assets/bgm/perfect.mp3"));
-            }
-            if (everyintervalJ()) {
-                jNot.push(new component(40, 40, "assets/img/note_normal.png", 500, -40, "image"));
-                jTapSound.push(new sound("assets/bgm/perfect.mp3"));
-            }
-            if (everyintervalK()) {
-                kNot.push(new component(40, 40, "assets/img/note_normal.png", 580, -40, "image"));
-                kTapSound.push(new sound("assets/bgm/perfect.mp3"));
+            // if (everyintervalD()) {
+            //     dNot.push(new component(40, 40, "assets/img/note_normal.png", 340, -40, "image"));
+            //     dTapSound.push(new sound("assets/bgm/perfect.mp3"));
+            // }
+            // if (everyintervalF()) {
+            //     fNot.push(new component(40, 40, "assets/img/note_normal.png", 420, -40, "image"));
+            //     fTapSound.push(new sound("assets/bgm/perfect.mp3"));
+            // }
+            // if (everyintervalJ()) {
+            //     jNot.push(new component(40, 40, "assets/img/note_normal.png", 500, -40, "image"));
+            //     jTapSound.push(new sound("assets/bgm/perfect.mp3"));
+            // }
+            // if (everyintervalK()) {
+            //     kNot.push(new component(40, 40, "assets/img/note_normal.png", 580, -40, "image"));
+            //     kTapSound.push(new sound("assets/bgm/perfect.mp3"));
+            // }
+
+            if (myGameArea.frameNo == 1 || everyinterval(30)) {
+                if(Math.floor(Math.random() * 2) == 0) {
+                    if (Math.floor(Math.random() * 4) == 0) {
+                        dNot.push(new component(40, 40, "assets/img/note_normal.png", 340, -40, "image"));
+                        dTapSound.push(new sound("assets/bgm/perfect.mp3"));
+                    } else if (Math.floor(Math.random() * 4) == 1) {
+                        fNot.push(new component(40, 40, "assets/img/note_normal.png", 420, -40, "image"));
+                        fTapSound.push(new sound("assets/bgm/perfect.mp3"));
+                    } else if (Math.floor(Math.random() * 4) == 2) {
+                        jNot.push(new component(40, 40, "assets/img/note_normal.png", 500, -40, "image"));
+                        jTapSound.push(new sound("assets/bgm/perfect.mp3"));
+                    } else if (Math.floor(Math.random() * 4) == 3) {
+                        kNot.push(new component(40, 40, "assets/img/note_normal.png", 580, -40, "image"));
+                        kTapSound.push(new sound("assets/bgm/perfect.mp3"));
+                    }
+                }
             }
 
             dBtn.color = "#3e8db1";
@@ -405,8 +434,6 @@
             // jTapSound.update();
             // kTapSound.update();
 
-            theSong.play();
-
             console.log(myGameArea.frameNo)
         }
 
@@ -424,7 +451,7 @@
 
         function everyintervalD(){
             for(i = 0; i < beatD.length; i++){
-                if(myGameArea.frameNo == beatD[i]-988){
+                if(myGameArea.frameNo == beatD[i]-1088){
                     return true
                 }
             }return false
@@ -432,7 +459,7 @@
 
         function everyintervalF(){
             for(i = 0; i < beatF.length; i++){
-                if(myGameArea.frameNo == beatF[i]-988){
+                if(myGameArea.frameNo == beatF[i]-1088){
                     return true
                 }
             }return false
@@ -440,7 +467,7 @@
 
         function everyintervalJ(){
             for(i = 0; i < beatJ.length; i++){
-                if(myGameArea.frameNo == beatJ[i]-988){
+                if(myGameArea.frameNo == beatJ[i]-1088){
                     return true
                 }
             }return false
@@ -448,10 +475,17 @@
 
         function everyintervalK(){
             for(i = 0; i < beatK.length; i++){
-                if(myGameArea.frameNo == beatK[i]-988){
+                if(myGameArea.frameNo == beatK[i]-1088){
                     return true
                 }
             }return false
+        }
+
+        function everyinterval(n) {
+            if((myGameArea.frameNo / n) % 1 == 0) {
+                return true
+            }
+            return false
         }
 
         function sound(src){
